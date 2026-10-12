@@ -97,9 +97,33 @@ $is_enabled = ($settings['asr_enabled'] ?? '') == '1';
 
 // --- HEALTH CHECK: IF ENABLED BUT NOT RUNNING, FORCE OFF ---
 if ($is_enabled && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $check_script_path = __DIR__ . '/v536/service.py';
-    $pid = exec("pgrep -f 'python3 $check_script_path'");
-    if (empty($pid)) {
+    $service_alive = false;
+
+    // 1. Check Docker / network service on port 8011
+    $speech_host = getenv('SPEECH_SERVICE_HOST') ?: (getenv('DB_HOST') ? 'speech-service' : '127.0.0.1');
+    $sock = @fsockopen($speech_host, 8011, $errno, $errstr, 1);
+    if ($sock) {
+        $service_alive = true;
+        fclose($sock);
+    }
+    if (!$service_alive) {
+        $sock2 = @fsockopen('127.0.0.1', 8011, $errno, $errstr, 1);
+        if ($sock2) {
+            $service_alive = true;
+            fclose($sock2);
+        }
+    }
+
+    // 2. Fallback: check local process if running directly on host
+    if (!$service_alive) {
+        $check_script_path = __DIR__ . '/v536/service.py';
+        $pid = exec("pgrep -f 'python3 $check_script_path'");
+        if (!empty($pid)) {
+            $service_alive = true;
+        }
+    }
+
+    if (!$service_alive) {
         $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('asr_enabled', '0') ON DUPLICATE KEY UPDATE setting_value = '0'");
         $stmt->execute();
         $is_enabled = false;

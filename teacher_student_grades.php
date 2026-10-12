@@ -309,7 +309,7 @@ if (isset($gst_info['needs_individual_assessment']) && (int)$gst_info['needs_ind
             const select = document.getElementById('quickTemplateSelect');
             const val = select.value;
             if (val) {
-                const studentName = <?php echo json_encode($student['fname']); ?>;
+                const studentName = <?php echo json_encode($student['fname'] ?? 'Student'); ?>;
                 const substituted = val.replace(/\{student_name\}|\/student/g, studentName);
                 document.getElementById('recText').value = substituted;
             }

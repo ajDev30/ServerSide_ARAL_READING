@@ -40,7 +40,7 @@ $counts = [
 ];
 
 foreach ($all_students as $s) {
-    $enrolled_grade = intval(preg_replace('/[^0-9]/', '', $s['grade_level']));
+    $enrolled_grade = intval(preg_replace('/[^0-9]/', '', $s['grade_level'] ?? ''));
     $final_status = 'Pending';
     
     if (isset($s['needs_individual_assessment']) && (int)$s['needs_individual_assessment'] === 0) {
@@ -73,14 +73,14 @@ foreach ($all_students as $s) {
         }
     }
     
-    $clean_section = preg_replace('/^Grade\s+\d+\s+/i', '', $s['section']);
-    $student_grade = trim($s['grade_level']);
+    $clean_section = preg_replace('/^Grade\s+\d+\s+/i', '', $s['section'] ?? '');
+    $student_grade = trim($s['grade_level'] ?? '');
 
     // Apply Filters
     if (!empty($filter_grade) && strcasecmp($student_grade, $filter_grade) !== 0) {
         continue;
     }
-    if (!empty($filter_section) && strcasecmp($clean_section, $filter_section) !== 0 && strcasecmp($s['section'], $filter_section) !== 0) {
+    if (!empty($filter_section) && strcasecmp($clean_section, $filter_section) !== 0 && strcasecmp($s['section'] ?? '', $filter_section) !== 0) {
         continue;
     }
     if (!empty($filter_status) && strcasecmp($final_status, $filter_status) !== 0) {
@@ -166,12 +166,12 @@ if ($total === 0) {
     $num = 1;
     foreach ($filtered_students as $st) {
         $mi = !empty($st['mname']) ? strtoupper(substr($st['mname'], 0, 1)) . '.' : '';
-        $name = trim($st['lname'] . ', ' . $st['fname'] . ' ' . $mi);
+        $name = trim(($st['lname'] ?? '') . ', ' . ($st['fname'] ?? '') . ' ' . $mi);
         if (mb_strlen($name) > 26) {
             $name = mb_substr($name, 0, 23) . '...';
         }
 
-        $grSec = trim($st['grade_level'] . ' - ' . $st['clean_section']);
+        $grSec = trim(($st['grade_level'] ?? '') . ' - ' . ($st['clean_section'] ?? ''));
         if (mb_strlen($grSec) > 18) {
             $grSec = mb_substr($grSec, 0, 15) . '...';
         }
@@ -180,10 +180,10 @@ if ($total === 0) {
             "%-4d | %-26s | %-13s | %-18s | %-14s | %s",
             $num++,
             $name,
-            $st['lrn'],
+            $st['lrn'] ?? 'N/A',
             $grSec,
-            $st['computed_profile'],
-            $st['computed_remarks']
+            $st['computed_profile'] ?? 'Pending',
+            $st['computed_remarks'] ?? ''
         );
     }
 }

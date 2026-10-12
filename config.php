@@ -461,13 +461,21 @@ if (!function_exists('get_student_course_progress_summary')) {
         }
 
         // Check if teacher saved a custom recommendation / condition tag
-        $stmtRec = $pdo->prepare("SELECT * FROM student_recommendations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1");
-        $stmtRec->execute([$user_id]);
-        $customRec = $stmtRec->fetch(PDO::FETCH_ASSOC);
-
-        $hasCustomRec = !empty($customRec);
-        $conditionTag = $customRec['condition_tag'] ?? null;
-        $recommendationText = $customRec['recommendation_text'] ?? null;
+        $hasCustomRec = false;
+        $conditionTag = null;
+        $recommendationText = null;
+        try {
+            $stmtRec = $pdo->prepare("SELECT * FROM student_recommendations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1");
+            $stmtRec->execute([$user_id]);
+            $customRec = $stmtRec->fetch(PDO::FETCH_ASSOC);
+            if (!empty($customRec)) {
+                $hasCustomRec = true;
+                $conditionTag = $customRec['condition_tag'] ?? null;
+                $recommendationText = $customRec['recommendation_text'] ?? null;
+            }
+        } catch (Exception $e) {
+            // Graceful fallback
+        }
 
         return [
             'has_tests' => true,

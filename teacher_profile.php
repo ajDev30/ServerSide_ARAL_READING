@@ -32,12 +32,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             move_uploaded_file($_FILES['profile_pic']['tmp_name'], $target_file);
         }
         
-        try {
-            $stmt = $pdo->prepare("UPDATE users SET fname=?, lname=?, mname=?, username=?, email=? WHERE id=?");
-            $stmt->execute([$fname, $lname, $mname, $username, $email, $user_id]);
-            $success_msg = "Profile updated successfully!";
-        } catch (PDOException $e) {
-            $error_msg = "Error updating profile. Username or email might already be taken.";
+        // Validation
+        if (empty($username)) {
+            $error_msg = "Username cannot be empty.";
+        } else {
+            // Check if username is already taken by another user
+            $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?");
+            $stmtCheck->execute([$username, $user_id]);
+            if ($stmtCheck->fetch()) {
+                $error_msg = "The username '" . htmlspecialchars($username) . "' is already taken. Please choose a different username.";
+            }
+        }
+
+        $emailValue = !empty($email) ? $email : null;
+        if (!$error_msg && $emailValue !== null) {
+            if (!filter_var($emailValue, FILTER_VALIDATE_EMAIL)) {
+                $error_msg = "Please enter a valid email address.";
+            } else {
+                // Check if email is already taken by another user
+                $stmtCheckEmail = $pdo->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?");
+                $stmtCheckEmail->execute([$emailValue, $user_id]);
+                if ($stmtCheckEmail->fetch()) {
+                    $error_msg = "The email address '" . htmlspecialchars($emailValue) . "' is already registered to another account.";
+                }
+            }
+        }
+
+        if (!$error_msg) {
+            try {
+                $stmt = $pdo->prepare("UPDATE users SET fname=?, lname=?, mname=?, username=?, email=? WHERE id=?");
+                $stmt->execute([$fname, $lname, $mname, $username, $emailValue, $user_id]);
+                $_SESSION['fname'] = $fname;
+                $_SESSION['username'] = $username;
+                $success_msg = "Profile updated successfully!";
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                    if (stripos($e->getMessage(), 'username') !== false) {
+                        $error_msg = "The username '" . htmlspecialchars($username) . "' is already taken.";
+                    } elseif (stripos($e->getMessage(), 'email') !== false) {
+                        $error_msg = "The email address '" . htmlspecialchars($emailValue) . "' is already in use.";
+                    } else {
+                        $error_msg = "Username or email might already be taken.";
+                    }
+                } else {
+                    $error_msg = "Error updating profile: " . htmlspecialchars($e->getMessage());
+                }
+            }
         }
     }
     
@@ -218,24 +258,24 @@ $is_dark = isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark';
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-bold text-slate-600 mb-1">First Name</label>
-                                    <input type="text" name="fname" value="<?php echo htmlspecialchars($user['fname']); ?>" class="w-full border border-slate-300 rounded p-2" required>
+                                    <input type="text" name="fname" id="fname" autocomplete="given-name" value="<?php echo htmlspecialchars($user['fname']); ?>" class="w-full border border-slate-300 rounded p-2" required>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-600 mb-1">Last Name</label>
-                                    <input type="text" name="lname" value="<?php echo htmlspecialchars($user['lname']); ?>" class="w-full border border-slate-300 rounded p-2" required>
+                                    <input type="text" name="lname" id="lname" autocomplete="family-name" value="<?php echo htmlspecialchars($user['lname']); ?>" class="w-full border border-slate-300 rounded p-2" required>
                                 </div>
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-bold text-slate-600 mb-1">Middle Name</label>
-                                <input type="text" name="mname" value="<?php echo htmlspecialchars($user['mname']); ?>" class="w-full border border-slate-300 rounded p-2">
+                                <input type="text" name="mname" id="mname" autocomplete="additional-name" value="<?php echo htmlspecialchars($user['mname']); ?>" class="w-full border border-slate-300 rounded p-2">
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-bold text-slate-600 mb-1">Username</label>
-                                <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" class="w-full border border-slate-300 rounded p-2" required>
+                                <input type="text" name="username" id="username" autocomplete="username" value="<?php echo htmlspecialchars($user['username']); ?>" class="w-full border border-slate-300 rounded p-2" required>
                             </div>
                             <div class="mb-6">
                                 <label class="block text-sm font-bold text-slate-600 mb-1">Email Address</label>
-                                <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" class="w-full border border-slate-300 rounded p-2 placeholder-slate-400" placeholder="student@example.com">
+                                <input type="email" name="email" id="email" autocomplete="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" class="w-full border border-slate-300 rounded p-2 placeholder-slate-400" placeholder="teacher@example.com">
                             </div>
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full transition">Save Profile</button>
                         </form>
@@ -249,7 +289,7 @@ $is_dark = isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark';
                                 <input type="hidden" name="update_password" value="1">
                                 <div class="mb-6">
                                     <label class="block text-sm font-bold text-slate-600 mb-1">New Password</label>
-                                    <input type="password" name="new_password" class="w-full border border-slate-300 rounded p-2" required minlength="4">
+                                    <input type="password" name="new_password" id="new_password" autocomplete="new-password" class="w-full border border-slate-300 rounded p-2" required minlength="4">
                                 </div>
                                 <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 px-4 rounded w-full transition">Update Password</button>
                             </form>

@@ -172,26 +172,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_course'])) {
             <?php else: ?>
                 <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-4">
                     <div class="flex flex-wrap items-center gap-2">
-                        <select id="filterGrade" onchange="filterCourseTable()" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
+                        <select id="filterGrade" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
                             <option value="">All Grades</option>
                             <option value="Grade 7">Grade 7</option>
                             <option value="Grade 8">Grade 8</option>
                             <option value="Grade 9">Grade 9</option>
                             <option value="Grade 10">Grade 10</option>
                         </select>
-                        <select id="filterProfile" onchange="filterCourseTable()" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
+                        <select id="filterProfile" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
                             <option value="">All Profiles</option>
                             <option value="Instructional">Instructional</option>
                             <option value="Frustration">Frustration</option>
                         </select>
-                        <select id="filterType" onchange="filterCourseTable()" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
+                        <select id="filterType" class="border border-slate-300 rounded px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 bg-white">
                             <option value="">All Types</option>
                             <option value="Pre-Test">Pre-Test</option>
                             <option value="Post-Test">Post-Test</option>
                         </select>
                     </div>
                     <div class="flex justify-end">
-                        <input type="text" id="courseSearch" onkeyup="filterCourseTable()" placeholder="Search tests..." class="border border-slate-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-full sm:w-64">
+                        <input type="text" id="courseSearch" placeholder="Search tests..." class="border border-slate-300 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 w-full sm:w-64">
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -204,28 +204,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_course'])) {
                                 <th class="p-4 border-b font-semibold">Target Profile</th>
                                 <th class="p-4 border-b font-semibold">Status</th>
                                 <th class="p-4 border-b font-semibold">Available From</th>
-                                <th class="p-4 border-b font-semibold text-right">Actions</th>
+                                <th class="p-4 border-b font-semibold text-right no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-slate-700 text-sm">
                             <?php foreach($assessments as $row): ?>
                             <tr class="border-b hover:bg-slate-50 transition" data-grade="Grade <?php echo $row['target_grade'] ?? '7'; ?>" data-profile="<?php echo $row['target_profile']; ?>" data-type="<?php echo $row['test_type']; ?>">
                                 <td class="p-4 font-bold text-slate-800"><?php echo htmlspecialchars($row['title']); ?></td>
-                                <td class="p-4">
-                                    <?php if($row['test_type'] === 'Pre-Test'): ?>
-                                        <span class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold uppercase">Pre-Test</span>
-                                    <?php else: ?>
-                                        <span class="bg-teal-100 text-teal-700 px-2.5 py-1 rounded text-xs font-bold uppercase">Post-Test</span>
-                                    <?php endif; ?>
-                                </td>
+                                <td class="p-4"><?php if($row['test_type'] === 'Pre-Test'): ?><span class="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded text-xs font-bold uppercase">Pre-Test</span><?php else: ?><span class="bg-teal-100 text-teal-700 px-2.5 py-1 rounded text-xs font-bold uppercase">Post-Test</span><?php endif; ?></td>
                                 <td class="p-4 font-semibold text-slate-600">Grade <?php echo $row['target_grade'] ?? '7'; ?></td>
-                                <td class="p-4">
-                                    <?php if($row['target_profile'] === 'Instructional'): ?>
-                                        <span class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase"><i class="fas fa-book-reader mr-1"></i> Instructional</span>
-                                    <?php else: ?>
-                                        <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase"><i class="fas fa-exclamation-circle mr-1"></i> Frustration</span>
-                                    <?php endif; ?>
-                                </td>
+                                <td class="p-4"><?php if($row['target_profile'] === 'Instructional'): ?><span class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase"><i class="fas fa-book-reader mr-1"></i> Instructional</span><?php else: ?><span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase"><i class="fas fa-exclamation-circle mr-1"></i> Frustration</span><?php endif; ?></td>
                                 <td class="p-4">
                                     <?php if($row['status'] == 'Published'): ?>
                                         <span class="text-emerald-600 font-bold"><i class="fas fa-globe mr-1"></i> Published</span>
@@ -687,7 +675,7 @@ function renderQ() {
 }
 
 window.addQ = function(overrideType = null) {
-    const type = overrideType || (document.getElementById('ra-q-type-add') ? document.getElementById('ra-q-type-add').value : 'multichoice');
+    const type = overrideType || (document.getElementById('ra-q-type-add-bottom') ? document.getElementById('ra-q-type-add-bottom').value : (document.getElementById('ra-q-type-add') ? document.getElementById('ra-q-type-add').value : 'multichoice'));
     let newQ = { type: type, question: "" };
     if (type === 'multichoice') { newQ.options = ["Option 1", "Option 2"]; newQ.correct = 0; } 
     else if (type === 'truefalse') { newQ.correct = true; }
@@ -709,11 +697,29 @@ renderQ();
 
         </div>
 <!-- Custom Table Filter -->
-<script src="v536/public/table_filter.js"></script>
+<script src="v536/public/table_filter.js?v=<?php echo time(); ?>"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        initTailwindTable('courseTable', 'courseSearch');
-    });
+    function initCourseFilters() {
+        initTailwindTable('courseTable', 'courseSearch', [
+            { id: 'filterType', colIndex: 1 },
+            { id: 'filterGrade', colIndex: 2 },
+            { id: 'filterProfile', colIndex: 3 }
+        ]);
+    }
+
+    window.filterCourseTable = function() {
+        const search = document.getElementById('courseSearch');
+        if (search) {
+            search.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCourseFilters);
+    } else {
+        initCourseFilters();
+    }
+    document.addEventListener('htmx:afterSwap', initCourseFilters);
 </script>
 
 <script>

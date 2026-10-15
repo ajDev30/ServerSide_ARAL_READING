@@ -241,7 +241,7 @@ sort($grade_levels);
 
                                     <!-- Column Tier 2 Headers -->
                                     <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                                        <th class="py-3 px-4">Student Name</th>
+                                        <th class="py-3 px-4">Student Name & LRN</th>
                                         <th class="py-3 px-4">Grade & Sec</th>
                                         <th class="py-3 px-4 bg-blue-50/30 border-l border-slate-200">GST Screening</th>
                                         <th class="py-3 px-4 bg-blue-50/30 border-r border-slate-200">Cascading Profile</th>
@@ -332,20 +332,22 @@ sort($grade_levels);
                                         data-name="<?php echo strtolower($s['fname'] . ' ' . $s['lname'] . ' ' . ($s['lrn'] ?? '')); ?>">
                                         
                                         <!-- Student Name & LRN -->
-                                        <td class="py-3 px-4 font-medium text-slate-800">
+                                        <td class="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3 text-xs shrink-0">
                                                     <?php echo strtoupper(substr($s['fname'], 0, 1)); ?>
                                                 </div>
-                                                <div>
+                                                <div class="leading-tight">
                                                     <span class="font-bold text-slate-800 block text-xs sm:text-sm"><?php echo $name; ?></span>
-                                                    <span class="text-[10px] text-slate-400 font-mono">LRN: <?php echo htmlspecialchars($s['lrn'] ?? 'N/A'); ?></span>
+                                                    <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded font-mono text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/80">
+                                                        <span class="text-slate-400 font-sans text-[10px] mr-1">LRN</span><?php echo htmlspecialchars($s['lrn'] ?? 'N/A'); ?>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
                                         
                                         <!-- Grade & Section -->
-                                        <td class="py-3 px-4 text-slate-600 text-xs font-medium">
+                                        <td class="py-3 px-4 text-slate-600 text-xs font-medium whitespace-nowrap">
                                             <?php echo htmlspecialchars(($s['grade_level'] ?? '') . ' - ' . $clean_sec); ?>
                                         </td>
                                         

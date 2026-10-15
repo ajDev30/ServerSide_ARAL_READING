@@ -6,6 +6,9 @@ v536/.azure-venv/
 __pycache__/
 *.pyc
 
+# Archives
+*.zip
+
 # Environment files
 .env
 .env.local

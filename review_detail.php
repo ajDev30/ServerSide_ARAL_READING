@@ -179,7 +179,7 @@ $has_ops = strpos($eval_data, 'ops') !== false;
                 <div id="miscueStrip" class="d-flex justify-content-center gap-2 flex-wrap"></div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6" style="display: none;">
                 <p class="text-sm text-slate-600 leading-relaxed">
                     <i class="fas fa-info-circle text-blue-500 mr-1"></i>
                     <strong>Teacher Override:</strong> Click on any word in the transcript on the right to manually change its grading. The Accuracy and WCPM scores will instantly recalculate. When finished, click <strong>Save Official Scores</strong>.

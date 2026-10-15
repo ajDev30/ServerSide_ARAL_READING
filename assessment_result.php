@@ -123,7 +123,14 @@ $profiles = $stmt->fetchAll();
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <h2 class="text-xl font-bold text-slate-800">Completed Pre-Assessments</h2>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="assessmentGradeFilter" class="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500 bg-white">
+                        <option value="">All Grades</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                    </select>
                     <select id="assessmentProfileFilter" class="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:border-blue-500 bg-white">
                         <option value="">All Profiles</option>
                         <option value="Independent">Independent</option>
@@ -145,7 +152,7 @@ $profiles = $stmt->fetchAll();
                                 <th class="py-3 px-4 font-medium">Date Completed</th>
                                 
                                 <th class="py-3 px-4 font-bold text-slate-800 whitespace-nowrap">Oral Reading</th>
-                                <th class="py-3 px-4 font-medium text-right">Action</th>
+                                <th class="py-3 px-4 font-medium text-right no-sort">Action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -180,15 +187,13 @@ $profiles = $stmt->fetchAll();
                                 elseif ($final_status === 'Independent') $status_color = 'bg-emerald-100 text-emerald-800';
                                 elseif ($final_status === 'Non-Reader') $status_color = 'bg-slate-700 text-white';
                             ?>
-                            <tr class="hover:bg-slate-50">
+                            <tr class="hover:bg-slate-50" data-grade="<?php echo htmlspecialchars($prof['grade_level']); ?>" data-profile="<?php echo htmlspecialchars(strtolower($display_verdict)); ?>">
                                 <td class="py-3 px-4 font-medium text-slate-800"><?php echo htmlspecialchars($prof['fname'] . ' ' . $prof['lname']); ?></td>
                                 <td class="py-3 px-4 text-slate-500"><?php echo htmlspecialchars($prof['grade_level'] . ' - ' . preg_replace('/^Grade\s+\d+\s+/i', '', $prof['section'])); ?></td>
                                 <td class="py-3 px-4 text-slate-500"><?php echo $date; ?></td>
                                 
                                 <td class="py-3 px-4">
-                                    <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold <?php echo $status_color; ?>">
-                                        <?php echo $display_verdict; ?>
-                                    </span>
+                                    <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold <?php echo $status_color; ?>"><?php echo htmlspecialchars($display_verdict); ?></span>
                                 </td>
                                 <td class="py-3 px-4 text-right">
                                     <a href="student_submissions.php?user_id=<?php echo $prof['student_id']; ?>" class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded text-xs font-medium transition">
@@ -214,11 +219,19 @@ $profiles = $stmt->fetchAll();
 
         </div>
 <!-- Custom Table Filter -->
-<script src="v536/public/table_filter.js"></script>
+<script src="v536/public/table_filter.js?v=<?php echo time(); ?>"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        initTailwindTable('assessmentTable', 'assessmentSearch', 'assessmentProfileFilter', 3);
-    });
+    function initAssessmentFilters() {
+        initTailwindTable('assessmentTable', 'assessmentSearch', [
+            { id: 'assessmentGradeFilter', colIndex: 1 },
+            { id: 'assessmentProfileFilter', colIndex: 3 }
+        ]);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAssessmentFilters);
+    } else {
+        initAssessmentFilters();
+    }
 </script>
 <script>
         window.toggleSidebar = function() {
